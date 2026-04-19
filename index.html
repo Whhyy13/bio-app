@@ -2,14 +2,16 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<title>Профиль</title>
+
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
 body {
     margin: 0;
+    font-family: Arial;
     background: #0f172a;
     color: white;
-    font-family: Arial;
     text-align: center;
 }
 
@@ -23,23 +25,12 @@ body {
     margin: 15px;
     border-radius: 15px;
 }
-
-.title {
-    font-size: 22px;
-    margin-bottom: 10px;
-}
-
-.big {
-    font-size: 28px;
-    font-weight: bold;
-}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-
 <h1>👤 Профиль</h1>
 
 <div class="card">
@@ -47,43 +38,30 @@ body {
 </div>
 
 <div class="card">
-    <div class="title">Статистика</div>
     ✔ <span id="right">0</span><br>
     ❌ <span id="wrong">0</span><br><br>
-    <div class="big">📈 <span id="percent">0</span>%</div>
+    📈 <span id="percent">0</span>%
 </div>
-
 </div>
 
 <script>
 let tg = window.Telegram.WebApp;
 tg.expand();
 
-let user = tg.initDataUnsafe.user;
+let user = tg.initDataUnsafe?.user;
 
-// если открыли НЕ через Telegram
 if (!user) {
     document.getElementById("user").innerText = "❌ Открой через Telegram";
 } else {
-
-    // показываем пользователя
     document.getElementById("user").innerText =
         user.first_name + " (ID: " + user.id + ")";
 
-    // 🔥 ЗАПРОС К API (с фикс ngrok)
-    fetch("https://mousy-usher-explain.ngrok-free.dev/stats/" + user.id, {
-        headers: {
-            "ngrok-skip-browser-warning": "true"
-        }
-    })
+    fetch("http://localhost:8000/stats/" + user.id)
     .then(r => r.json())
     .then(data => {
         document.getElementById("right").innerText = data.right;
         document.getElementById("wrong").innerText = data.wrong;
         document.getElementById("percent").innerText = data.percent;
-    })
-    .catch(() => {
-        document.getElementById("user").innerText = "❌ Ошибка подключения к API";
     });
 }
 </script>
