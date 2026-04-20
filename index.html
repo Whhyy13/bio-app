@@ -17,7 +17,7 @@ if (!user) {
         user.first_name + " (ID: " + user.id + ")";
 
     // ❗ ВАЖНО: НЕ localhost
-    fetch("https://YOUR_BACKEND_URL/stats/" + user.id)
+    fetch("https://bio-api.onrender.com/stats/" + user.id)
     .then(r => r.json())
     .then(data => {
         document.getElementById("right").innerText = data.right;
