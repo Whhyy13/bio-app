@@ -9,8 +9,8 @@
 <style>
 body {
     margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(180deg, #0f172a, #020617);
+    font-family: Arial;
+    background: #0f172a;
     color: white;
     text-align: center;
 }
@@ -23,21 +23,7 @@ body {
     background: #1e293b;
     padding: 20px;
     margin: 15px;
-    border-radius: 20px;
-}
-
-.progress {
-    height: 10px;
-    background: #334155;
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 10px;
-}
-
-.bar {
-    height: 100%;
-    width: 0%;
-    background: #22c55e;
+    border-radius: 15px;
 }
 </style>
 </head>
@@ -55,36 +41,39 @@ body {
     ✔ <span id="right">0</span><br>
     ❌ <span id="wrong">0</span><br><br>
     📈 <span id="percent">0</span>%
-
-    <div class="progress">
-        <div class="bar" id="bar"></div>
-    </div>
 </div>
 </div>
 
 <script>
 let tg = window.Telegram.WebApp;
+
 tg.ready();
 tg.expand();
 
-// 🔥 ПАРСИНГ initData
-function getUserFromInitData() {
-    let initData = tg.initData;
+// 🔥 ПРАВИЛЬНОЕ ПОЛУЧЕНИЕ USER
+let user = null;
 
-    if (!initData) return null;
-
-    let params = new URLSearchParams(initData);
-    let userStr = params.get("user");
-
-    if (!userStr) return null;
-
-    return JSON.parse(userStr);
+// 1. пробуем нормальный способ
+if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    user = tg.initDataUnsafe.user;
 }
 
-let user = getUserFromInitData();
+// 2. fallback (если не сработало)
+if (!user && tg.initData) {
+    let params = new URLSearchParams(tg.initData);
+    let userStr = params.get("user");
 
+    if (userStr) {
+        try {
+            user = JSON.parse(userStr);
+        } catch {}
+    }
+}
+
+// ❌ если всё равно нет
 if (!user) {
-    document.getElementById("user").innerText = "❌ Telegram не передал данные";
+    document.getElementById("user").innerText =
+        "❌ Telegram не передал user";
 } else {
 
     document.getElementById("user").innerText =
@@ -93,15 +82,13 @@ if (!user) {
     fetch("http://localhost:8000/stats/" + user.id)
     .then(r => r.json())
     .then(data => {
-
         document.getElementById("right").innerText = data.right;
         document.getElementById("wrong").innerText = data.wrong;
         document.getElementById("percent").innerText = data.percent;
-
-        document.getElementById("bar").style.width = data.percent + "%";
     })
     .catch(() => {
-        document.getElementById("user").innerText = "❌ API не отвечает";
+        document.getElementById("user").innerText =
+            "❌ API не отвечает";
     });
 }
 </script>
