@@ -9,8 +9,8 @@
 <style>
 body {
     margin: 0;
-    font-family: Arial;
-    background: #0f172a;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(180deg, #0f172a, #020617);
     color: white;
     text-align: center;
 }
@@ -19,11 +19,60 @@ body {
     padding: 20px;
 }
 
+/* Заголовок */
+h1 {
+    margin-bottom: 20px;
+}
+
+/* Карточки */
 .card {
     background: #1e293b;
     padding: 20px;
     margin: 15px;
-    border-radius: 15px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    animation: fadeIn 0.6s ease;
+}
+
+/* Имя */
+.user {
+    font-size: 18px;
+    opacity: 0.8;
+}
+
+/* Статистика */
+.stats {
+    font-size: 18px;
+    margin: 10px 0;
+}
+
+/* Процент */
+.percent {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+/* Прогресс бар */
+.progress {
+    height: 12px;
+    background: #334155;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+    transition: 1s;
+}
+
+/* Анимация */
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
 }
 </style>
 </head>
@@ -31,17 +80,24 @@ body {
 <body>
 
 <div class="container">
+
 <h1>👤 Профиль</h1>
 
 <div class="card">
-    <div id="user">Загрузка...</div>
+    <div id="user" class="user">Загрузка...</div>
 </div>
 
 <div class="card">
-    ✔ <span id="right">0</span><br>
-    ❌ <span id="wrong">0</span><br><br>
-    📈 <span id="percent">0</span>%
+    <div class="stats">✔ <span id="right">0</span></div>
+    <div class="stats">❌ <span id="wrong">0</span></div>
+
+    <div class="percent">📈 <span id="percent">0</span>%</div>
+
+    <div class="progress">
+        <div class="progress-bar" id="bar"></div>
+    </div>
 </div>
+
 </div>
 
 <script>
@@ -53,15 +109,26 @@ let user = tg.initDataUnsafe?.user;
 if (!user) {
     document.getElementById("user").innerText = "❌ Открой через Telegram";
 } else {
+
     document.getElementById("user").innerText =
         user.first_name + " (ID: " + user.id + ")";
 
     fetch("http://localhost:8000/stats/" + user.id)
     .then(r => r.json())
     .then(data => {
+
         document.getElementById("right").innerText = data.right;
         document.getElementById("wrong").innerText = data.wrong;
         document.getElementById("percent").innerText = data.percent;
+
+        // анимация прогресс-бара
+        setTimeout(() => {
+            document.getElementById("bar").style.width = data.percent + "%";
+        }, 300);
+
+    })
+    .catch(() => {
+        document.getElementById("user").innerText = "❌ Ошибка API";
     });
 }
 </script>
