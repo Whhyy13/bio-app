@@ -1,85 +1,23 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Профиль</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: #0f172a;
-    color: white;
-    text-align: center;
-}
-
-.container {
-    padding: 20px;
-}
-
-.card {
-    background: #1e293b;
-    padding: 20px;
-    margin: 15px;
-    border-radius: 15px;
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-<h1>👤 Профиль</h1>
-
-<div class="card">
-    <div id="user">Загрузка...</div>
-</div>
-
-<div class="card">
-    ✔ <span id="right">0</span><br>
-    ❌ <span id="wrong">0</span><br><br>
-    📈 <span id="percent">0</span>%
-</div>
-</div>
-
 <script>
 let tg = window.Telegram.WebApp;
 
 tg.ready();
 tg.expand();
 
-// 🔥 ПРАВИЛЬНОЕ ПОЛУЧЕНИЕ USER
-let user = null;
+// ✅ правильное получение user (без fallback-хака)
+const user = tg.initDataUnsafe?.user;
 
-// 1. пробуем нормальный способ
-if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-    user = tg.initDataUnsafe.user;
-}
-
-// 2. fallback (если не сработало)
-if (!user && tg.initData) {
-    let params = new URLSearchParams(tg.initData);
-    let userStr = params.get("user");
-
-    if (userStr) {
-        try {
-            user = JSON.parse(userStr);
-        } catch {}
-    }
-}
-
-// ❌ если всё равно нет
+// ❗ если открыт НЕ в Telegram
 if (!user) {
     document.getElementById("user").innerText =
-        "❌ Telegram не передал user";
+        "❌ Откройте через Telegram WebApp";
 } else {
 
     document.getElementById("user").innerText =
         user.first_name + " (ID: " + user.id + ")";
 
-    fetch("http://localhost:8000/stats/" + user.id)
+    // ❗ ВАЖНО: НЕ localhost
+    fetch("https://YOUR_BACKEND_URL/stats/" + user.id)
     .then(r => r.json())
     .then(data => {
         document.getElementById("right").innerText = data.right;
@@ -92,6 +30,3 @@ if (!user) {
     });
 }
 </script>
-
-</body>
-</html>
